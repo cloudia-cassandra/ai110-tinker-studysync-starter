@@ -9,10 +9,16 @@ and neither function has been checked against bad input.
 2. Move apply_streak_bonus() into scoring_helpers.py and fix the import here.
 3. Find 2-3 "breaker" inputs for session_rating() and decide if they need handling.
 """
+# apply_streak_bonus now lives in scoring_helpers.py; import it so
+# run_demo() and render_session_scorer_tab() below can still call it by name.
+from scoring_helpers import apply_streak_bonus
 
 
 def session_rating(combined_score: int) -> str:
     """Rate a study session from its combined minutes+focus score. Correct and tested."""
+    # NOTE: `: int` above is just a type hint -- Python never checks it at
+    # runtime. Passing a float like 87.5 works fine because `>=` compares
+    # ints and floats normally; nothing here actually requires an int.
     if combined_score >= 90:
         return "Great"
     if combined_score >= 80:
@@ -22,12 +28,6 @@ def session_rating(combined_score: int) -> str:
     if combined_score >= 60:
         return "Meh"
     return "Skip"
-
-
-def apply_streak_bonus(combined_score: int, streak_days: int) -> int:
-    """Add a bonus for consecutive study days, capped at 100. Works fine -- it's just in the wrong file."""
-    boosted = combined_score + streak_days * 2
-    return min(boosted, 100)
 
 
 def render_session_scorer_tab():
@@ -51,6 +51,22 @@ def run_demo():
         boosted = apply_streak_bonus(raw, streak)
         rating = session_rating(boosted)
         print(f"Raw: {raw} -> Boosted: {boosted} -> Rating: {rating}")
+
+    # Breaker inputs for session_rating() -- checking what happens with
+    # values that shouldn't normally occur but aren't blocked by the code.
+    print(session_rating(-10))
+    # -> "Skip": falls through every >= check and hits the final return.
+    # Negative scores are treated as just "very bad", not as an error.
+
+    print(session_rating(150))
+    # -> "Great": matches the first check (>= 90) and returns right away.
+    # There's no upper bound, so any score above 90 is "Great" no matter
+    # how far above -- 150 and 9000 behave the same.
+
+    print(session_rating(87.5))
+    # -> "Good": matches the >= 80 check. The `int` type hint on
+    # combined_score is not enforced at runtime, so a float compares
+    # fine with `>=` and flows through like any other number.
 
 
 if __name__ == "__main__":
