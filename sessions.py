@@ -37,9 +37,7 @@ def next_occurrence(last_date: date, frequency: str) -> date:
     Return the next scheduled date given the last session date and a
     frequency label ("daily" or "weekly"), using FREQUENCY_DAYS and timedelta.
     """
-    # TODO (Part 4): look up the day count for `frequency` in FREQUENCY_DAYS
-    # and add that many days to last_date using timedelta.
-    raise NotImplementedError
+    return last_date + timedelta(days=FREQUENCY_DAYS[frequency])
 
 
 def find_conflicts(sessions: list) -> list:
@@ -49,9 +47,13 @@ def find_conflicts(sessions: list) -> list:
     Return a list of (session_a, session_b) tuples for every pair that shares
     the same "slot". Must NOT crash on an empty list or a list with no conflicts.
     """
-    # TODO (Part 4): implement without crashing on empty input. A simple
-    # nested loop comparing each pair once is fine.
-    raise NotImplementedError
+    conflicts = []
+    # Start j at i + 1 so each pair is compared once and never with itself.
+    for i in range(len(sessions)):
+        for j in range(i + 1, len(sessions)):
+            if sessions[i]["slot"] == sessions[j]["slot"]:
+                conflicts.append((sessions[i], sessions[j]))
+    return conflicts
 
 
 def render_session_log_tab():
